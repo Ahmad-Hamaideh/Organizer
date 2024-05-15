@@ -3,6 +3,12 @@
 
  The program automatically creates new folders with today’s date in the path chosen by the user (from the office path, the downloads folder, or the C drive). Files in the specified path are moved to new folders based on the file extension.
 
+ 1. Sort files
+
+2. Find duplicates
+
+3. Convert images to PDF
+
 * Technology Used:
 
 Programming Language: C# was used for the project.
