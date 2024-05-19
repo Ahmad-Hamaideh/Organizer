@@ -10,6 +10,8 @@ using iTextSharp.text.pdf;
 using iTextSharp.text;
 using static iTin.Core.Interop.Shared.Linux.Constants.PROC;
 using System.Net.NetworkInformation;
+using System.Media;
+using System.Reflection;
 
 
 namespace Perfectoo
@@ -31,9 +33,10 @@ namespace Perfectoo
                 Console.WriteLine("2. Find duplicates \n ");
                 Console.WriteLine("3. Convert images to PDF \n ");
                 Console.WriteLine("4. Exit \n");
+                Console.WriteLine("---------------------------------------------------------------------------------------------------------------------\n");
 
                 string choice = Console.ReadLine();
-                Console.WriteLine();
+                Console.WriteLine("\n");
 
                 switch (choice)
                 {
@@ -47,31 +50,38 @@ namespace Perfectoo
                         ChooseAndProcess("Convert images to PDF", desktopPath, downloadsPath, cDrivePath, ConvertImagesToPdf);
                         break;
                     case "4":
-                        return;
+                        System.Environment.Exit(0);
+                        break;
                     default:
                         Console.WriteLine("Invalid choice!");
                         Console.Beep();
                         break;
                 }
             }
+
+
+
         }
 
-        static void ChooseAndProcess(string action, string desktopPath, string downloadsPath, string cDrivePath, Action<string> processAction)
+     
+
+        static void ChooseAndProcess(string action, string desktopPath, string downloadsPath, string cDrivePath, Action<string, bool> processAction)
         {
-            Console.WriteLine($"Choose the path to {action}: ");
-            Console.WriteLine($"1. Desktop Path: {desktopPath}");
-            Console.WriteLine($"2. Downloads Path: {downloadsPath}");
-            Console.WriteLine($"3. C Drive Path: {cDrivePath}");
+            Console.WriteLine($"Choose the path to {action}: \n ");
+            Console.WriteLine($"1. Desktop Path: {desktopPath}\n");
+            Console.WriteLine($"2. Downloads Path: {downloadsPath}\n");
+            Console.WriteLine($"3. C Drive Path: {cDrivePath}\n");
+            Console.WriteLine("---------------------------------------------------------------------------------------------------------------------\n");
 
             string choice = Console.ReadLine();
-            Console.WriteLine();
+            Console.WriteLine("\n");
 
             string selectedPath = "";
 
             switch (choice)
             {
                 case "1":
-                    selectedPath = desktopPath;  
+                    selectedPath = desktopPath;
                     break;
                 case "2":
                     selectedPath = downloadsPath;
@@ -84,11 +94,51 @@ namespace Perfectoo
                     return;
             }
 
-            processAction(selectedPath);
+
+            Console.WriteLine("Choose how to process:\n");
+            Console.WriteLine(" 1 - Process files within a specific folder\n");
+            Console.WriteLine(" 2 - Process all files within the selected path\n");
+            Console.WriteLine("---------------------------------------------------------------------------------------------------------------------\n");
+
+            string processChoice = Console.ReadLine();
+            Console.WriteLine("\n");
+            string[] allFiles = Directory.GetFiles(selectedPath);
+
+             bool processAll = false;
+            switch (processChoice)
+            {
+                case "1":
+                    Console.WriteLine("Enter the folder name to process:");
+                    string[] folderNames = Directory.GetDirectories(selectedPath);
+                    for (int i = 0; i < folderNames.Length; i++)
+                    {
+                        Console.WriteLine($"[{i + 1}]. {Path.GetFileName(folderNames[i])}");
+
+                    }
+                    Console.WriteLine("------------------------------------------------------------------------------\n");
+
+                    if (!int.TryParse(Console.ReadLine(), out int folderIndex) || folderIndex < 1 || folderIndex > folderNames.Length)
+                    {
+                        Console.WriteLine("Invalid folder selection!");
+                        return;
+                    }
+
+                    selectedPath = folderNames[folderIndex - 1];
+                    processAction(selectedPath, processAll);
+                    break;
+                case "2":
+                    processAll = true;
+                    processAction(selectedPath, processAll);
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice!");
+                    return;
+            }
         }
-    
+
+
         //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-        static void ProcessFiles(string basePath)
+        static void ProcessFiles(string basePath, bool processAll)
         {
             string todayFolder = Path.Combine(basePath, DateTime.Today.ToString("yyyy-MM-dd"));
             Directory.CreateDirectory(todayFolder);
@@ -97,48 +147,59 @@ namespace Perfectoo
             string pdfFolder = Path.Combine(todayFolder, "PDF");
             string videoFolder = Path.Combine(todayFolder, "Videos");
             string imageFolder = Path.Combine(todayFolder, "Images");
-            string excelFolder = Path.Combine(todayFolder, "excelFolder");
+            string excelFolder = Path.Combine(todayFolder, "Excel");
             Directory.CreateDirectory(textFolder);
             Directory.CreateDirectory(pdfFolder);
             Directory.CreateDirectory(videoFolder);
             Directory.CreateDirectory(imageFolder);
             Directory.CreateDirectory(excelFolder);
 
+            Dictionary<string, string> extensionToFolderMap = new Dictionary<string, string>
+            {
+                { ".txt", textFolder },
+                { ".doc", textFolder },
+                { ".docx", textFolder },
+                { ".pdf", pdfFolder },
+                { ".mp4", videoFolder },
+                { ".avi", videoFolder },
+                { ".mkv", videoFolder },
+                { ".jpg", imageFolder },
+                { ".png", imageFolder },
+                { ".gif", imageFolder },
+                { ".xls", excelFolder },
+                { ".xlsx", excelFolder },
+                { ".csv", excelFolder }
+            };
+
             foreach (string filePath in Directory.GetFiles(basePath))
             {
                 string fileName = Path.GetFileName(filePath);
                 string extension = Path.GetExtension(fileName).ToLower();
 
-                if (extension == ".txt" || extension == ".doc" || extension == ".docx")
+                if (extensionToFolderMap.TryGetValue(extension, out string destinationFolder))
                 {
-                    File.Move(filePath, Path.Combine(textFolder, fileName));
-                }
-                else if (extension == ".pdf")
-                {
-                    File.Move(filePath, Path.Combine(pdfFolder, fileName));
-                }
-                else if (extension == ".mp4" || extension == ".avi" || extension == ".mkv")
-                {
-                    File.Move(filePath, Path.Combine(videoFolder, fileName));
-                }
-                else if (extension == ".jpg" || extension == ".png" || extension == ".gif")
-                {
-                    File.Move(filePath, Path.Combine(imageFolder, fileName));
-                }
-                else if (extension == ".xls" || extension == ".xlsx" || extension == ".csv")
-                {
-                    File.Move(filePath, Path.Combine(excelFolder, fileName));
+                    string destinationPath = Path.Combine(destinationFolder, fileName);
+
+                    if (File.Exists(destinationPath))
+                    {
+                        string newFileName = $"{Path.GetFileNameWithoutExtension(fileName)}_{DateTime.Now.Ticks}{extension}";
+                        destinationPath = Path.Combine(destinationFolder, newFileName);
+                    }
+
+                    File.Move(filePath, destinationPath);
                 }
                 else
                 {
-                    LogActivity($"Unrecognized file extension: {fileName} ({extension}) ", basePath);
+                    LogActivity($"Unrecognized file extension: {fileName} ({extension})", basePath);
                 }
             }
+
             Console.Beep();
-            Console.WriteLine($"Files organized successfully in {basePath}");
+            Console.WriteLine($"Files organized successfully in {basePath}\n");
+            Console.WriteLine("--------------------------------------------------------------------------------------------------------------------- \n ");
         }
         //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_ Convert Images ToPdf
-        static void ConvertImagesToPdf(string basePath)
+        static void ConvertImagesToPdf(string basePath, bool processAll)
         {
             try
             {
@@ -168,7 +229,7 @@ namespace Perfectoo
                     Console.WriteLine("Enter the path of the new directory: ");
 
                     string newDirectory = Console.ReadLine().Trim();
-                    ConvertImagesToPdf(newDirectory);
+                    ConvertImagesToPdf(newDirectory ,true);
                     return;
                 }
 
@@ -233,7 +294,7 @@ namespace Perfectoo
         }
 
 
-        static bool IsImageFile(string filePath)
+        static bool IsImageFile(string filePath, bool processAll)
         {
             string extension = Path.GetExtension(filePath).ToLower();
             return extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".gif" || extension == ".bmp";
@@ -247,7 +308,7 @@ namespace Perfectoo
             File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
         }        
         //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
-        static void FindDuplicates(string basePath)
+        static void FindDuplicates(string basePath, bool processAll)
         {
             try
             {
@@ -297,3 +358,4 @@ namespace Perfectoo
         }
     }
 }
+    
