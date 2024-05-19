@@ -1,0 +1,54 @@
+[33mcommit b232cc77bc6002d373fd75f134100cab73e04ca6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m)[m
+Author: Ahmad-Hamaideh <iahmed.hamaideh@gmail.com>
+Date:   Sun May 19 15:58:04 2024 +0300
+
+    update
+
+[33mcommit 10abec41c379c87f87f11ede8440a1c84dddd710[m[33m ([m[1;31morigin/master[m[33m)[m
+Author: Ahmad Hamaideh <115453080+Ahmad-Hamaideh@users.noreply.github.com>
+Date:   Wed May 15 12:41:47 2024 +0300
+
+    Add files via upload
+
+[33mcommit 36da57a8f825b5b49bb752bc93b45def175a5d69[m
+Merge: 47b400e 7c8f663
+Author: Ahmad-Hamaideh <iahmed.hamaideh@gmail.com>
+Date:   Wed May 15 11:58:36 2024 +0300
+
+    Merge branch 'master' of https://github.com/Ahmad-Hamaideh/Organizer
+
+[33mcommit 47b400e51ec09492a500410390727324109955f8[m
+Author: Ahmad-Hamaideh <iahmed.hamaideh@gmail.com>
+Date:   Wed May 15 11:57:27 2024 +0300
+
+    add
+
+[33mcommit 87b8fe7dfcf00cda1a89d92b03f80a9ac1caec09[m
+Author: Ahmad Hamaideh <115453080+Ahmad-Hamaideh@users.noreply.github.com>
+Date:   Wed May 15 11:37:53 2024 +0300
+
+    Organizing Update
+
+[33mcommit 7c8f66320fd594a38d8916f7a7bb072e743ccda5[m
+Author: Ahmad Hamaideh <115453080+Ahmad-Hamaideh@users.noreply.github.com>
+Date:   Wed May 15 11:37:53 2024 +0300
+
+    Update README.md
+
+[33mcommit 683f4fd530096c3e2afd5c30c978b3951442ca60[m
+Author: Ahmad Hamaideh <115453080+Ahmad-Hamaideh@users.noreply.github.com>
+Date:   Mon May 13 00:10:51 2024 +0300
+
+    Update README.md
+
+[33mcommit 115c78b631ebfea332240553df7964b2eda59279[m
+Author: Ahmad-Hamaideh <iahmed.hamaideh@gmail.com>
+Date:   Mon May 13 00:05:26 2024 +0300
+
+    Add project files.
+
+[33mcommit d2f898c9b78e2055d51c140420414e2667bef2f7[m
+Author: Ahmad-Hamaideh <iahmed.hamaideh@gmail.com>
+Date:   Mon May 13 00:05:24 2024 +0300
+
+    Add .gitattributes, .gitignore, and README.md.
