@@ -16,6 +16,13 @@ using System.Reflection;
 
 namespace Perfectoo
 {
+    using System;
+    using System;
+    using System.IO;
+    using System.Linq;
+
+
+
     internal class Program
     {
         static void Main(string[] args)
@@ -26,6 +33,21 @@ namespace Perfectoo
             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
             string downloadsPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + "\\Downloads";
             string cDrivePath = "C:\\";
+
+            Dictionary<string, string> paths = new Dictionary<string, string>
+            {
+                 { "1", desktopPath },
+                 { "2", downloadsPath },
+                 { "3", cDrivePath }
+            };
+
+            DriveInfo[] drives = DriveInfo.GetDrives();
+            for (int i = 0; i < drives.Length; i++)
+            {
+                paths.Add((i + 4).ToString(), drives[i].RootDirectory.FullName);
+            }
+
+
             while (true)
             {
                 Console.WriteLine("Choose any action: \n ");
@@ -41,13 +63,13 @@ namespace Perfectoo
                 switch (choice)
                 {
                     case "1":
-                        ChooseAndProcess("Sort", desktopPath, downloadsPath, cDrivePath, ProcessFiles);
+                        ChooseAndProcess("Sort", paths, ProcessFiles);
                         break;
                     case "2":
-                        ChooseAndProcess("Search for duplicates", desktopPath, downloadsPath, cDrivePath, FindDuplicates);
+                        ChooseAndProcess("Search for duplicates", paths, FindDuplicates);
                         break;
                     case "3":
-                        ChooseAndProcess("Convert images to PDF", desktopPath, downloadsPath, cDrivePath, ConvertImagesToPdf);
+                        ChooseAndProcess("Convert images to PDF", paths, ConvertImagesToPdf);
                         break;
                     case "4":
                         System.Environment.Exit(0);
@@ -58,19 +80,21 @@ namespace Perfectoo
                         break;
                 }
             }
-
-
-
         }
 
-     
 
-        static void ChooseAndProcess(string action, string desktopPath, string downloadsPath, string cDrivePath, Action<string, bool> processAction)
+
+
+        static void ChooseAndProcess(string action, Dictionary<string, string> paths, Action<string, bool> processAction)
         {
-            Console.WriteLine($"Choose the path to {action}: \n ");
-            Console.WriteLine($"1. Desktop Path: {desktopPath}\n");
-            Console.WriteLine($"2. Downloads Path: {downloadsPath}\n");
-            Console.WriteLine($"3. C Drive Path: {cDrivePath}\n");
+            Console.WriteLine($"Choose the path to {action}: \n");
+
+            int index = 1;
+            foreach (var kvp in paths)
+            {
+                Console.WriteLine($"{index}. {kvp.Key}: {kvp.Value}\n");
+                index++;
+            }
             Console.WriteLine("---------------------------------------------------------------------------------------------------------------------\n");
 
             string choice = Console.ReadLine();
@@ -78,22 +102,15 @@ namespace Perfectoo
 
             string selectedPath = "";
 
-            switch (choice)
+            if (paths.ContainsKey(choice))
             {
-                case "1":
-                    selectedPath = desktopPath;
-                    break;
-                case "2":
-                    selectedPath = downloadsPath;
-                    break;
-                case "3":
-                    selectedPath = cDrivePath;
-                    break;
-                default:
-                    Console.WriteLine("Invalid choice!");
-                    return;
+                selectedPath = paths[choice];
             }
-
+            else
+            {
+                Console.WriteLine("Invalid choice!");
+                return;
+            }
 
             Console.WriteLine("Choose how to process:\n");
             Console.WriteLine(" 1 - Process files within a specific folder\n");
@@ -102,29 +119,13 @@ namespace Perfectoo
 
             string processChoice = Console.ReadLine();
             Console.WriteLine("\n");
-            string[] allFiles = Directory.GetFiles(selectedPath);
 
-             bool processAll = false;
+            bool processAll = false;
             switch (processChoice)
             {
                 case "1":
                     Console.WriteLine("Enter the folder name to process:");
-                    string[] folderNames = Directory.GetDirectories(selectedPath);
-                    for (int i = 0; i < folderNames.Length; i++)
-                    {
-                        Console.WriteLine($"[{i + 1}]. {Path.GetFileName(folderNames[i])}");
-
-                    }
-                    Console.WriteLine("------------------------------------------------------------------------------\n");
-
-                    if (!int.TryParse(Console.ReadLine(), out int folderIndex) || folderIndex < 1 || folderIndex > folderNames.Length)
-                    {
-                        Console.WriteLine("Invalid folder selection!");
-                        return;
-                    }
-
-                    selectedPath = folderNames[folderIndex - 1];
-                    processAction(selectedPath, processAll);
+                    ListFolders(selectedPath, processAction);
                     break;
                 case "2":
                     processAll = true;
@@ -136,6 +137,57 @@ namespace Perfectoo
             }
         }
 
+        static void ListFolders(string path, Action<string, bool> processAction)
+        {
+            try
+            {
+                Console.WriteLine($"Folders in {path}:");
+                string[] folders = Directory.GetDirectories(path);
+                if (folders.Length == 0)
+                {
+                    Console.WriteLine("No folders found.");
+                    Console.WriteLine("Press any key to go back.");
+                    Console.ReadKey();
+                    Console.WriteLine("Going back...\n");
+                    return;
+                }
+
+                for (int i = 0; i < folders.Length; i++)
+                {
+                    Console.WriteLine($"[{i + 1}]. {Path.GetFileName(folders[i])}");
+                }
+
+                Console.WriteLine("Enter the folder number to process (0 to go back):");
+                string input = Console.ReadLine();
+                if (string.IsNullOrEmpty(input))
+                {
+                    Console.WriteLine("Invalid input!");
+                    return;
+                }
+
+                if (int.TryParse(input, out int folderIndex) && folderIndex >= 1 && folderIndex <= folders.Length)
+                {
+                    string selectedFolder = folders[folderIndex - 1];
+                    Console.WriteLine($"Selected folder: {selectedFolder}\n");
+                    ListFolders(selectedFolder, processAction);
+                }
+                else if (folderIndex == 0)
+                {
+                    Console.WriteLine("Going back...\n");
+                    return;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid folder selection!");
+                    return;
+                }
+                processAction(path, false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+        }
 
         //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
         static void ProcessFiles(string basePath, bool processAll)
@@ -229,7 +281,7 @@ namespace Perfectoo
                     Console.WriteLine("Enter the path of the new directory: ");
 
                     string newDirectory = Console.ReadLine().Trim();
-                    ConvertImagesToPdf(newDirectory ,true);
+                    ConvertImagesToPdf(newDirectory, true);
                     return;
                 }
 
@@ -270,7 +322,7 @@ namespace Perfectoo
                         {
                             var image = iTextSharp.text.Image.GetInstance(imageStream);
 
-                            float width = document.PageSize.Width * 0.5f; 
+                            float width = document.PageSize.Width * 0.5f;
                             float height = image.Height * (width / image.Width);
 
                             image.ScaleToFit(width, height);
@@ -306,7 +358,7 @@ namespace Perfectoo
             string logFilePath = "activity_log.txt";
             string logMessage = $"[{DateTime.Now.ToString()}] {message} {basePath} ";
             File.AppendAllText(logFilePath, logMessage + Environment.NewLine);
-        }        
+        }
         //-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
         static void FindDuplicates(string basePath, bool processAll)
         {
@@ -358,4 +410,3 @@ namespace Perfectoo
         }
     }
 }
-    
