@@ -16,13 +16,7 @@ using System.Reflection;
 
 namespace Perfectoo
 {
-    using System;
-    using System;
-    using System.IO;
-    using System.Linq;
-
-
-
+   
     internal class Program
     {
         static void Main(string[] args)
